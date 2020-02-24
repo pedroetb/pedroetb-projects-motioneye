@@ -1,0 +1,59 @@
+version: '3.7'
+
+services:
+  motioneye:
+    image: ${IMAGE_NAME:-ccrisan/motioneye}:${IMAGE_TAG:-master-armhf}
+    networks:
+      motion-net:
+      traefik-net:
+    volumes:
+      - config-vol:/etc/motioneye
+      - data-vol:/var/lib/motioneye
+    deploy:
+      mode: replicated
+      replicas: ${REPLICAS:-1}
+      labels:
+        traefik.enable: 'true'
+        traefik.http.routers.motioneye.entrypoints: ${TRAEFIK_ENTRYPOINT:-https}
+        traefik.http.routers.motioneye.tls.certresolver: ${TRAEFIK_CERTRESOLVER:-default}
+        traefik.http.routers.motioneye.rule: Host(`${TRAEFIK_SUBDOMAIN}.${TRAEFIK_DOMAIN}`)
+        traefik.http.services.motioneye.loadbalancer.server.port: ${PORT:-8765}
+      restart_policy:
+        delay: ${RESTART_DELAY:-10s}
+      update_config:
+        delay: ${UPDATE_DELAY:-1m}
+      resources:
+        limits:
+          cpus: '${RESOURCES_LIMITS_CPUS:-1}'
+          memory: ${RESOURCES_LIMITS_MEMORY:-256M}
+        reservations:
+          cpus: '${RESOURCES_RESERVATIONS_CPUS:-0.001}'
+          memory: ${RESOURCES_RESERVATIONS_MEMORY:-100M}
+
+networks:
+  motion-net:
+    name: ${MOTION_NET_NAME:-motion-net}
+    driver: ${MOTION_NET_DRIVER:-overlay}
+    attachable: true
+
+  traefik-net:
+    name: ${TRAEFIK_NET_NAME:-traefik-net}
+    driver: ${TRAEFIK_NET_DRIVER:-overlay}
+    external: true
+
+volumes:
+  config-vol:
+    name: ${CONFIG_VOL_NAME:-motioneye-config-vol}
+    driver: local
+    driver_opts:
+      type: ${CONFIG_VOL_TYPE:-nfs4}
+      o: ${CONFIG_VOL_OPTIONS}
+      device: ${CONFIG_VOL_DEVICE:-:/motioneye-config-vol/}
+
+  data-vol:
+    name: ${DATA_VOL_NAME:-motioneye-data-vol}
+    driver: local
+    driver_opts:
+      type: ${DATA_VOL_TYPE:-cifs}
+      o: ${DATA_VOL_OPTIONS}
+      device: ${DATA_VOL_DEVICE}
