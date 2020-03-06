@@ -9,6 +9,7 @@ services:
     volumes:
       - config-vol:/etc/motioneye
       - data-vol:/var/lib/motioneye
+      - work-vol:/var/run/motion
     deploy:
       mode: replicated
       replicas: ${REPLICAS:-1}
@@ -28,7 +29,7 @@ services:
           memory: ${RESOURCES_LIMITS_MEMORY:-256M}
         reservations:
           cpus: '${RESOURCES_RESERVATIONS_CPUS:-0.001}'
-          memory: ${RESOURCES_RESERVATIONS_MEMORY:-100M}
+          memory: ${RESOURCES_RESERVATIONS_MEMORY:-64M}
 
 networks:
   motion-net:
@@ -57,3 +58,6 @@ volumes:
       type: ${DATA_VOL_TYPE:-cifs}
       o: ${DATA_VOL_OPTIONS}
       device: ${DATA_VOL_DEVICE}
+
+  work-vol:
+    name: ${WORK_VOL_NAME:-motioneye-work-vol}
