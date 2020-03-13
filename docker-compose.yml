@@ -2,9 +2,10 @@ version: '3.7'
 
 services:
   motioneye:
-    image: ${IMAGE_NAME:-ccrisan/motioneye}:${IMAGE_TAG:-master-armhf}
+    image: ${IMAGE_NAME:-ccrisan/motioneye}:${IMAGE_TAG:-master-amd64}
     networks:
       motion-net:
+      mail-net:
       traefik-net:
     volumes:
       - config-vol:/etc/motioneye
@@ -36,6 +37,11 @@ networks:
     name: ${MOTION_NET_NAME:-motion-net}
     driver: ${MOTION_NET_DRIVER:-overlay}
     attachable: true
+
+  mail-net:
+    name: ${MAIL_NET_NAME:-mail-net}
+    driver: ${MAIL_NET_DRIVER:-overlay}
+    external: true
 
   traefik-net:
     name: ${TRAEFIK_NET_NAME:-traefik-net}
